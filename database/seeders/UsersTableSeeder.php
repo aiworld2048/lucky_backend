@@ -78,7 +78,7 @@ class UsersTableSeeder extends Seeder
             }
         }
 
-        Add SKP0101 player with overwrite functionality
+        //Add SKP0101 player with overwrite functionality
         $this->addPlayerSKP0101($owner->id, $walletService);
     }
 
