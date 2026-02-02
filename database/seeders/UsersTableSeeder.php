@@ -23,62 +23,53 @@ class UsersTableSeeder extends Seeder
             'LUCKY',
             '09123456789',
             null,
-            'OWNER' . Str::random(6)
+            // 'OWNER'.Str::random(6)
+            null
         );
-        $walletService->deposit($owner, 500_000_000, TransactionName::CapitalDeposit);
+        $walletService->deposit($owner, 500_000_00000000, TransactionName::CapitalDeposit);
 
-        // Create system wallet
+         // Create system wallet
         $systemWallet = $this->createUser(
             UserType::SystemWallet,
             'System Wallet',
             'SYS001',
             '09222222222',
             null,
-            'SYS' . Str::random(6)
+            'SYS'.Str::random(6)
         );
-        $walletService->deposit($systemWallet, 500 * 100_0000, TransactionName::CapitalDeposit);
+        $walletService->deposit($systemWallet, 500 * 100_000_000, TransactionName::CapitalDeposit);
 
-        $agent999 = $this->createUser(
-            UserType::Agent,
-            'Agent 777',
-            'LUCKY777',
-            '0911234561',
-            $owner->id,
-            '777'
-        );
-        $walletService->transfer($owner, $agent999, 2_000_000, TransactionName::CreditTransfer);
-
-        //Create 10 agents
-        for ($i = 1; $i <= 10; $i++) {
+        // Create agents under owner
+        for ($i = 1; $i <= 2; $i++) {
             $agent = $this->createUser(
                 UserType::Agent,
                 "Agent $i",
-                'LUCKYAG'.str_pad($i, 3, '0', STR_PAD_LEFT),
+                'AG'.str_pad($i, 2, '0', STR_PAD_LEFT),
                 '091123456'.str_pad($i, 2, '0', STR_PAD_LEFT),
                 $owner->id,
-                'LUCKYAG'.Str::random(6)
+                'AG'.Str::random(6)
             );
-            // Random initial balance between 1.5M to 2.5M
-            $initialBalance = rand(15, 25) * 100_000;
+            // Initial balance for agent
+            $initialBalance = rand(100_000, 200_000);
             $walletService->transfer($owner, $agent, $initialBalance, TransactionName::CreditTransfer);
 
-            // Create players directly under each agent (no sub-agents)
-            for ($k = 1; $k <= 4; $k++) {
+            // Create players under each agent
+            for ($k = 1; $k <= 2; $k++) {
                 $player = $this->createUser(
-                    UserType::Player,
+                     UserType::Player,
                     "Player $i-$k",
-                    'LP'.str_pad($i, 2, '0', STR_PAD_LEFT).str_pad($k, 2, '0', STR_PAD_LEFT),
+                    'P'.str_pad($i, 2, '0', STR_PAD_LEFT).str_pad($k, 2, '0', STR_PAD_LEFT),
                     '091111111'.str_pad($i, 1, '0', STR_PAD_LEFT).str_pad($k, 2, '0', STR_PAD_LEFT),
                     $agent->id,
-                    'PLAYER'.Str::random(6)
+                    'P'.Str::random(6)
                 );
-                // Fixed initial balance of 10,000
+                // Initial balance of 10,000
                 $initialBalance = 10000;
                 $walletService->transfer($agent, $player, $initialBalance, TransactionName::CreditTransfer);
             }
         }
 
-        //Add SKP0101 player with overwrite functionality
+        // Add SKP0101 player
         $this->addPlayerSKP0101($owner->id, $walletService);
     }
 
@@ -86,28 +77,22 @@ class UsersTableSeeder extends Seeder
     {
         // Find first agent to assign this player to
         $agent = User::where('type', UserType::Agent->value)
-            ->where('agent_id', $ownerId)
-            ->first();
+                    ->where('agent_id', $ownerId)
+                    ->first();
 
-        if (! $agent) {
+        if (!$agent) {
             throw new \Exception('No agent found to assign SKP0101 player to');
         }
 
-        // Create or refresh player
-        $player = User::updateOrCreate(
-            ['user_name' => 'SKP0101'],
-            [
-                'name' => 'SKP Player',
-                'phone' => '09123456789',
-                'password' => Hash::make('gscplus'),
-                'agent_id' => $agent->id,
-                'status' => 1,
-                'is_changed_password' => 1,
-                'type' => UserType::Player->value,
-            ]
+        // Create new player
+        $player = $this->createUser(
+            UserType::Player,
+            'Test Player',
+            'P01001',
+            '09123456789',
+            $agent->id,
+            'TEST' . Str::random(6)
         );
-        $player->balance = 0;
-        $player->save();
 
         // Initial balance of 10,000
         $walletService->transfer($agent, $player, 10000, TransactionName::CreditTransfer);
@@ -127,13 +112,12 @@ class UsersTableSeeder extends Seeder
             'name' => $name,
             'user_name' => $user_name,
             'phone' => $phone,
-            'password' => Hash::make('luckyvip'),
+            'password' => Hash::make('superhitvip'),
             'agent_id' => $parent_id,
             'status' => 1,
             'is_changed_password' => 1,
             'type' => $type->value,
             'referral_code' => $referral_code,
-
         ]);
     }
 }
