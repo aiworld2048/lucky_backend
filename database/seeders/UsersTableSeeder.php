@@ -82,7 +82,7 @@ class UsersTableSeeder extends Seeder
         $this->addPlayerSKP0101($owner->id, $walletService);
     }
 
-    private function addPlayerSKP0101(int $ownerId, CustomWalletService $walletService): void
+    private function addPlayerSKP0101(int $ownerId, WalletService $walletService): void
     {
         // Find first agent to assign this player to
         $agent = User::where('type', UserType::Agent->value)
