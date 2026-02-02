@@ -48,7 +48,7 @@ class UsersTableSeeder extends Seeder
         );
         $walletService->transfer($owner, $agent999, 2_000_000, TransactionName::CreditTransfer);
 
-        Create 10 agents
+        //Create 10 agents
         for ($i = 1; $i <= 10; $i++) {
             $agent = $this->createUser(
                 UserType::Agent,
