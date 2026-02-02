@@ -27,8 +27,10 @@ use App\Http\Requests\Api\ChangePasswordRequest;
 class AuthController extends Controller
 {
     use HttpResponses;
-
+    private const AGENT_ROLE = 2;
     private const PLAYER_ROLE = 3;
+    private const SUB_AGENT_ROLE = 5;
+
 
     public function login(LoginRequest $request)
     {
@@ -69,12 +71,37 @@ class AuthController extends Controller
         return $this->success(new UserResource($user), 'User login successfully.');
     }
 
+  
+
     public function register(RegisterRequest $request)
     {
-        $agent = User::where('referral_code', $request->referral_code)->first();
+        $referralUser = User::where('referral_code', $request->referral_code)->first();
 
-        if (! $agent) {
+        if (! $referralUser) {
             return $this->error('', 'Not Found Agent', 401);
+        }
+
+        // Determine the main agent ID
+        // If referral code belongs to a sub-agent, get the parent agent (main agent)
+        // If referral code belongs to a main agent, use it directly
+        $mainAgentId = $referralUser->id;
+        $referralUserType = UserType::from((int) $referralUser->type);
+
+        if ($referralUserType === UserType::SubAgent) {
+            // If it's a sub-agent, get the parent agent (main agent)
+            if (! $referralUser->agent_id) {
+                return $this->error('', 'Sub-Agent has no parent agent', 401);
+            }
+            $mainAgentId = $referralUser->agent_id;
+            
+            // Verify the parent is actually a main agent
+            $mainAgent = User::find($mainAgentId);
+            if (! $mainAgent || (int) $mainAgent->type !== UserType::Agent->value) {
+                return $this->error('', 'Invalid parent agent', 401);
+            }
+        } elseif ($referralUserType !== UserType::Agent) {
+            // Only allow registration with Agent or SubAgent referral codes
+            return $this->error('', 'Invalid referral code type', 401);
         }
 
         $inputs = $request->validated();
@@ -84,8 +111,9 @@ class AuthController extends Controller
             'name' => $request->name,
             'user_name' => $this->generateRandomString(),
             'password' => Hash::make($inputs['password']),
-            'agent_id' => $agent->id,
-            'type' => UserType::Player,
+            'agent_id' => $mainAgentId, // Always use main agent ID
+            'type' => UserType::Player->value,
+            'reg_player_ref_code' => $request->referral_code,
         ]);
 
         $user->roles()->sync(self::PLAYER_ROLE);

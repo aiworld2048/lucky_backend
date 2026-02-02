@@ -17,7 +17,7 @@ class DatabaseSeeder extends Seeder
             SubAgentPermissionSeeder::class,
             RolesTableSeeder::class,
             PermissionRoleTableSeeder::class,
-            OwnerSystemWalletAgentSeeder::class,
+            //OwnerSystemWalletAgentSeeder::class,
             UsersTableSeeder::class,
             RoleUserTableSeeder::class,
             BannerSeeder::class,
