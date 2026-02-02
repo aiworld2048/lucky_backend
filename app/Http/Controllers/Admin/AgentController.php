@@ -92,45 +92,7 @@ class AgentController extends Controller
         return view('admin.agent.index', compact('users'));
     }
 
-    // public function index(): View
-    // {
-    //     // if (! Gate::allows('agent_index')) {
-    //     //     abort(403);
-    //     // }
-
-    //     $agents = User::with(['roles', 'children.poneWinePlayer'])->whereHas('roles', fn ($q) => $q->where('role_id', self::AGENT_ROLE))
-    //         ->select('id', 'name', 'user_name', 'phone', 'status', 'referral_code')
-    //         ->where('agent_id', auth()->id())
-    //         ->orderBy('created_at', 'desc')
-    //         ->get();
-
-    //     $reportData = DB::table('users as a')
-    //         ->join('users as p', 'p.agent_id', '=', 'a.id')          // player
-    //         ->join('place_bets', 'place_bets.member_account', '=', 'p.user_name')
-    //         ->groupBy('a.id')
-    //         ->selectRaw('a.id as agent_id,SUM(place_bets.bet_amount) as total_bet_amount,SUM(place_bets.prize_amount) as total_payout_amount')
-    //         ->get()
-    //         ->keyBy('agent_id');
-
-    //     // dd($reportData);
-    //     $users = $agents->map(function ($agent) use ($reportData) {
-    //         $report = $reportData->get($agent->id);
-    //         $poneWineTotalAmt = $agent->children->flatMap->poneWinePlayer->sum('win_lose_amt');
-
-    //         return (object) [
-    //             'id' => $agent->id,
-    //             'name' => $agent->name,
-    //             'user_name' => $agent->user_name,
-    //             'referral_code' => $agent->referral_code,
-    //             'phone' => $agent->phone,
-    //             'balanceFloat' => $agent->balanceFloat,
-    //             'status' => $agent->status,
-    //             'win_lose' => (($report->total_payout_amount ?? 0) - ($report->total_bet_amount ?? 0)) + $poneWineTotalAmt,
-    //         ];
-    //     });
-
-    //     return view('admin.agent.index', compact('users'));
-    // }
+    
 
     /**
      * Show the form for creating a new resource.
@@ -230,7 +192,7 @@ class AgentController extends Controller
             ->with('password', $request->password)
             ->with('username', $agent->user_name)
             ->with('amount', $transfer_amount)
-            ->with('link', "https://ag.ponewine20x.xyz/login");
+            ->with('link', "https://blog.silentforestnature.xyz/login");
     }
 
     /**
