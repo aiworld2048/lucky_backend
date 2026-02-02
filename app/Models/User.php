@@ -1,0 +1,298 @@
+<?php
+
+namespace App\Models;
+
+// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Enums\UserType;
+use App\Models\Admin\Permission;
+use App\Models\Admin\Role;
+use Bavix\Wallet\Interfaces\Wallet;
+use Bavix\Wallet\Traits\HasWallet;
+use Bavix\Wallet\Traits\HasWalletFloat;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Crypt;
+use Laravel\Sanctum\HasApiTokens;
+
+class User extends Authenticatable implements Wallet
+{
+    use HasApiTokens, HasFactory, HasWalletFloat, Notifiable;
+
+     private const OWNER_ROLE = 1;
+
+    private const AGENT_ROLE = 2;
+
+    private const PLAYER_ROLE = 3;
+
+
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array<int, string>
+     */
+    protected $fillable = [
+        'user_name',
+        'name',
+        'phone',
+        'email',
+        'email_verified_at',
+        'password',
+        'game_provider_password',
+        'profile',
+        'balance',
+        'max_score',
+        'status',
+        'is_changed_password',
+        'agent_id',
+        'payment_type_id',
+        'agent_logo',
+        'account_name',
+        'account_number',
+        'line_id',
+        'commission',
+        'referral_code',
+        'site_name',
+        'site_link',
+        'type',
+        'client_agent_name',
+        'client_agent_id',
+    ];
+    /**
+     * The attributes that should be hidden for serialization.
+     *
+     * @var array<int, string>
+     */
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
+
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array<string, string>
+     */
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+    ];
+
+    public function roles()
+    {
+        return $this->belongsToMany(Role::class);
+    }
+
+    public function permissions()
+    {
+        return $this->belongsToMany(Permission::class, 'permission_user');
+    }
+
+    public function hasRole($role)
+    {
+        return $this->roles->contains('title', $role);
+    }
+
+    // A user can have children (e.g., Admin has many Agents, or Agent has many Players)
+    public function children()
+    {
+        return $this->hasMany(User::class, 'agent_id');
+    }
+
+    // A user belongs to an agent (parent)
+    public function agent()
+    {
+        return $this->belongsTo(User::class, 'agent_id');
+    }
+
+    // Fetch players managed by an agent
+    public function players()
+    {
+        return $this->hasMany(User::class, 'agent_id');
+    }
+
+    public function admin()
+    {
+        return $this->belongsTo(User::class, 'agent_id');
+    }
+
+    // A user can have a parent (e.g., Agent belongs to an Admin)
+    public function parent()
+    {
+        return $this->belongsTo(User::class, 'agent_id');
+    }
+
+    // Get all players under an agent
+    public function Agentplayers()
+    {
+        return $this->children()->whereHas('roles', function ($query) {
+            $query->where('role_id', self::PLAYER_ROLE);
+        });
+    }
+
+    public function banners()
+    {
+        return $this->hasMany(Banner::class, 'admin_id'); // Banners owned by this admin
+    }
+
+    public function bannertexts()
+    {
+        return $this->hasMany(BannerText::class, 'admin_id'); // Banners owned by this admin
+    }
+
+    public function bannerads()
+    {
+        return $this->hasMany(BannerAds::class, 'admin_id'); // Banners owned by this admin
+    }
+
+    public function promotions()
+    {
+        return $this->hasMany(Promotion::class, 'admin_id'); // Banners owned by this admin
+    }
+
+    public function toptenwithdraws()
+    {
+        return $this->hasMany(TopTenWithdraw::class, 'admin_id'); // Banners owned by this admin
+    }
+
+    /**
+     * Recursive relationship to get all ancestors up to senior.
+     */
+    public function ancestors()
+    {
+        return $this->parent()->with('ancestors');
+    }
+
+    /**
+     * Recursive relationship to get all descendants down to players.
+     */
+    public function descendants()
+    {
+        return $this->children()->with('descendants');
+    }
+
+    public function agents()
+    {
+        return $this->hasMany(User::class, 'agent_id');
+    }
+
+    public function buffaloPlayer()
+    {
+        return $this->hasMany(PlaceBet::class, 'player_id', 'id');
+    }
+
+    public static function adminUser()
+    {
+        return self::where('type', UserType::SystemWallet->value)->first();
+    }
+
+    /**
+     * Get the game provider password for this user.
+     */
+    public function getGameProviderPassword(): ?string
+    {
+        if ($this->game_provider_password) {
+            try {
+                return Crypt::decryptString($this->game_provider_password);
+            } catch (\Illuminate\Contracts\Encryption\DecryptException $e) {
+                // Log the error or handle it as appropriate (e.g., return null to regenerate)
+                \Log::error('Failed to decrypt game_provider_password for user '.$this->id, ['error' => $e->getMessage()]);
+
+                return null;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Set the game provider password for this user.
+     */
+    public function setGameProviderPassword(string $password): void
+    {
+        $this->game_provider_password = Crypt::encryptString($password);
+        $this->save(); // Save the user model to persist the password
+    }
+
+    public function placeBets()
+    {
+        return $this->hasMany(PlaceBet::class, 'member_account', 'user_name', 'player_id');
+    }
+
+    public function hasPermission($permission)
+    {
+        // If user is a parent agent, they have all permissions
+        if ($this->hasRole('Agent')) {
+            return true;
+        }
+
+        // For sub-agents, check their specific permissions
+        if ($this->hasRole('SubAgent')) {
+            return $this->permissions()
+                ->where('title', $permission)
+                ->exists();
+        }
+
+        return false;
+    }
+
+    // public function getAllDescendantPlayers()
+    // {
+    //     $players = collect();
+    //     $children = $this->children()->with('roles')->get();
+
+    //     foreach ($children as $child) {
+    //         if ($child->hasRole('Player')) {
+    //             $players->push($child);
+    //         } elseif ($child->hasRole('SubAgent')) {
+    //             $players = $players->merge($child->getAllDescendantPlayers());
+    //         }
+    //     }
+
+    //     return $players;
+    // }
+
+    public function getAllDescendantPlayers()
+    {
+        // Fetch direct players
+        $players = $this->children()->where('type', \App\Enums\UserType::Player)->get();
+
+        // Fetch all subagents
+        $subagents = $this->children()->where('type', \App\Enums\UserType::SubAgent)->get();
+
+        // For each subagent, fetch their direct players recursively
+        foreach ($subagents as $sub) {
+            $players = $players->merge($sub->getAllDescendantPlayers());
+        }
+
+        return $players;
+    }
+
+    // digit bet
+
+    public function digitBets()
+    {
+        return $this->hasMany(DigitBet::class, 'user_id');
+    }
+
+    public function twoBets()
+    {
+        return $this->hasMany(TwoBet::class, 'user_id');
+    }
+
+    // If 'agent_id' also refers to a User
+    public function placedBetsAsAgent()
+    {
+        return $this->hasMany(TwoBet::class, 'agent_id');
+    }
+
+    public function twoBetSlips()
+    {
+        return $this->hasMany(TwoBetSlip::class, 'user_id');
+    }
+
+    public function reportTransactionsAsPlayer()
+    {
+        return $this->hasMany(ReportTransaction::class, 'user_id');
+    }
+
+}

@@ -1,0 +1,51 @@
+{
+    "code": 0,
+    "message": "",
+    "provider_games": [
+        {
+            "game_code": "nft-aviatrix",
+            "game_name": "Aviatrix",
+            "game_type": "OTHER",
+            "image_url": "https://images.gscplusmd.com/statics/production/publics/images/games/1/1165/OTHER/nft-aviatrix.png",
+            "product_id": 1254,
+            "product_code": 1165,
+            "support_currency": "ALL",
+            "status": "ACTIVATED",
+            "allow_free_round": false,
+            "lang_name": {
+                "0": "Aviatrix",
+                "1": "Aviatrix",
+                "12": "Aviatrix",
+                "2": "Aviatrix",
+                "3": "Aviatrix",
+                "33": "Aviatrix",
+                "39": "Aviatrix",
+                "4": "Aviatrix",
+                "5": "Aviatrix",
+                "6": "Aviatrix",
+                "7": "Aviatrix",
+                "9": "Aviatrix"
+            },
+            "lang_icon": {
+                "0": "https://images.gscplusmd.com/statics/production/publics/images/games/1/1165/OTHER/nft-aviatrix.png",
+                "1": "https://images.gscplusmd.com/statics/production/publics/images/games/1/1165/OTHER/nft-aviatrix.png",
+                "12": "https://images.gscplusmd.com/statics/production/publics/images/games/1/1165/OTHER/nft-aviatrix.png",
+                "2": "https://images.gscplusmd.com/statics/production/publics/images/games/1/1165/OTHER/nft-aviatrix.png",
+                "3": "https://images.gscplusmd.com/statics/production/publics/images/games/1/1165/OTHER/nft-aviatrix.png",
+                "33": "https://images.gscplusmd.com/statics/production/publics/images/games/1/1165/OTHER/nft-aviatrix.png",
+                "39": "https://images.gscplusmd.com/statics/production/publics/images/games/1/1165/OTHER/nft-aviatrix.png",
+                "4": "https://images.gscplusmd.com/statics/production/publics/images/games/1/1165/OTHER/nft-aviatrix.png",
+                "5": "https://images.gscplusmd.com/statics/production/publics/images/games/1/1165/OTHER/nft-aviatrix.png",
+                "6": "https://images.gscplusmd.com/statics/production/publics/images/games/1/1165/OTHER/nft-aviatrix.png",
+                "7": "https://images.gscplusmd.com/statics/production/publics/images/games/1/1165/OTHER/nft-aviatrix.png",
+                "9": "https://images.gscplusmd.com/statics/production/publics/images/games/1/1165/OTHER/nft-aviatrix.png"
+            },
+            "created_at": 1722913861000
+        }
+    ],
+    "pagination": {
+        "size": 0,
+        "offset": 0,
+        "total": "1"
+    }
+}

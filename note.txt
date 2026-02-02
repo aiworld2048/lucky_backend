@@ -1,0 +1,36 @@
+sudo nano /etc/postgresql/16/main/postgresql.conf
+sudo nano /etc/postgresql/16/main/pg_hba.conf # Replace 14 with your version
+sudo systemctl restart postgresql
+sudo systemctl enable postgresql # Ensure it starts on boot
+sudo systemctl status postgresql # Check if it's running
+sudo apt install php8.3-pgsql
+sudo systemctl restart php8.3-fpm # Replace 8.1 with your PHP version
+sudo systemctl restart nginx
+
+php -r "file_put_contents('/var/www/html/azm_999_backend/storage/logs/laravel.log', '');"
+* * * * * cd /var/www/gsc_plus && php artisan schedule:run >> /dev/null 2>&1
+tail -f /var/log/mysql/error.log
+
+09959369595
+
+
+CREATE DATABASE azm_production_db;
+CREATE USER azm_prod_db_user WITH PASSWORD 'azm_production_db_password';
+GRANT ALL PRIVILEGES ON DATABASE azm_production_db TO azm_prod_db_user;
+ALTER USER azm_prod_db_user WITH PASSWORD 'azm_production_db_password';
+
+sudo -i -u postgres
+psql -d azm_production_db
+
+psql -h 127.0.0.1 -U azm_prod_db_user -d azm_production_db
+
+GRANT ALL ON SCHEMA public TO azm_prod_db_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO azm_prod_db_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO azm_prod_db_user;
+
+sudo -i -u postgres
+psql -d ponewine_db
+
+php -r "file_put_contents('/var/www/html/super_hit_api/storage/logs/laravel.log', '');" 
+composer require elephantio/elephant.io
+
